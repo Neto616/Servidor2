@@ -17,6 +17,10 @@ db.connect();
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+app.get("/", async (req, res) => {
+  return res.json({ estatus: 1, mensaje: "Bienvenido" })
+})
+
 app.get('/servidorget', async (req, res) => {
   try {
     const results = await db.query('SELECT * FROM sensor');
