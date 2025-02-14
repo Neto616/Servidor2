@@ -11,9 +11,7 @@ const dbConfig = {
     database: 'tscu'
 };
 
-
-
-const db = Database.createConnection(dbConfig).promise();
+const db = Database.createConnection("mysql://root:biHNJomgAigVIfrqyLepYVBsYJMLdOPc@junction.proxy.rlwy.net:23391/railway").promise();
 db.connect();
 
 app.use(bodyParser.json());
