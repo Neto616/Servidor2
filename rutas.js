@@ -16,11 +16,17 @@ const dbConfig = {
 
 const db = dataBase.createPool(dbConfig).promise();
 
-route.get('/servidorget', async (req, res) => {
+route.get('/', async (req, res) => {
     try {
       const [results] = await db.query('SELECT * FROM fuga_gas');
     console.log("El resultado es: ", results)
-      res.json(results);
+      res.json({
+        estatus: 1,
+        info: {
+            messgae: "Si hay conexion con el servidor y la base de datos",
+            data: results
+        }
+      });
     } catch (err) {
       res.status(500).send(err.message);
     }
@@ -79,7 +85,6 @@ route.post('/fuga_gas', async (req, res) => {
         })
     }
 })
-
 
 route.put('/fin_fuga', async (req, res) => {
     try {
