@@ -1,0 +1,9 @@
+Create database TSCU;
+
+use TSCU;
+
+Create table sensor(
+id int AUTO_INCREMENT,
+dato float,
+segundo int
+);
