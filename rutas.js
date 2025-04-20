@@ -18,7 +18,13 @@ const db = dataBase.createPool(dbConfig).promise();
 
 route.get('/crear-datos-prueba', async (req, res) => {
     try {
+        // 1. Crear el procedimiento almacenado generar_fugas
         await db.query(`
+            DROP PROCEDURE IF EXISTS generar_fugas;
+        `);
+        await db.query(`
+            CREATE PROCEDURE generar_fugas()
+            BEGIN
                 DECLARE i INT DEFAULT 1;
                 DECLARE inicio DATETIME;
                 DECLARE fin DATETIME;
@@ -31,16 +37,37 @@ route.get('/crear-datos-prueba', async (req, res) => {
                     VALUES (inicio, fin);
 
                     SET i = i + 1;
+                END WHILE;
+            END;
+        `);
+
+        // 2. Crear el procedimiento almacenado generar_detalles
+        await db.query(`
+            DROP PROCEDURE IF EXISTS generar_detalles;
         `);
         await db.query(`
-                SELECT id, tiempo_inicial, tiempo_final FROM fuga_gas;
+            CREATE PROCEDURE generar_detalles()
+            BEGIN
+                DECLARE done INT DEFAULT FALSE;
+                DECLARE fuga_id INT;
+                DECLARE tiempo_i DATETIME;
+                DECLARE tiempo_f DATETIME;
+                DECLARE detalle_count INT;
+                DECLARE detalle_i INT;
+                DECLARE tiempo_actual DATETIME;
+                DECLARE ppm_value INT;
+
+                DECLARE cur CURSOR FOR
+                    SELECT id, tiempo_inicial, tiempo_final FROM fuga_gas;
+
                 DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
                 OPEN cur;
-                
+
                 read_loop: LOOP
                     FETCH cur INTO fuga_id, tiempo_i, tiempo_f;
                     IF done THEN
-                    LEAVE read_loop;
+                        LEAVE read_loop;
                     END IF;
 
                     -- Definir cantidad aleatoria de detalles entre 10 y 20
@@ -48,23 +75,28 @@ route.get('/crear-datos-prueba', async (req, res) => {
                     SET detalle_i = 1;
 
                     WHILE detalle_i <= detalle_count DO
-                    -- Generar tiempo aleatorio entre inicio y fin
-                    SET tiempo_actual = DATE_ADD(tiempo_i, INTERVAL FLOOR(RAND() * TIMESTAMPDIFF(SECOND, tiempo_i, tiempo_f)) SECOND);
-                    -- Generar ppm aleatorio entre 3000 y 8000
-                    SET ppm_value = FLOOR(3000 + RAND() * 5000);
+                        -- Generar tiempo aleatorio entre inicio y fin
+                        SET tiempo_actual = DATE_ADD(tiempo_i, INTERVAL FLOOR(RAND() * TIMESTAMPDIFF(SECOND, tiempo_i, tiempo_f)) SECOND);
+                        -- Generar ppm aleatorio entre 3000 y 8000
+                        SET ppm_value = FLOOR(3000 + RAND() * 5000);
 
-                    INSERT INTO detalles_fuga (id_fuga, tiempo, ppm)
-                    VALUES (fuga_id, tiempo_actual, ppm_value);
+                        INSERT INTO detalles_fuga (id_fuga, tiempo, ppm)
+                        VALUES (fuga_id, tiempo_actual, ppm_value);
 
-                    SET detalle_i = detalle_i + 1;
+                        SET detalle_i = detalle_i + 1;
                     END WHILE;
 
                 END LOOP;
 
                 CLOSE cur;
+            END;
         `);
 
-        return res.status(200).json({ estatus: 1, info: "Todo bien"})
+        // 3. Llamar a los procedimientos almacenados para generar los datos
+        await db.query(`CALL generar_fugas();`);
+        await db.query(`CALL generar_detalles();`);
+
+        return res.status(200).json({ estatus: 1, info: "Datos de prueba generados exitosamente" });
 
     } catch (err) {
         res.status(500).send(err.message);
