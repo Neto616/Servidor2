@@ -18,12 +18,6 @@ const db = dataBase.createPool(dbConfig).promise();
 
 route.get('/crear-datos-prueba', async (req, res) => {
     try {
-        await db.query(`
-            DROP table detalles_fuga;
-        `);
-        await db.query(`
-            Create table detalles_fuga(id_fuga int not null, tiempo datetime, ppm smallint);
-        `);
         // 1. Crear el procedimiento almacenado generar_fugas
         await db.query(`
             DROP PROCEDURE IF EXISTS generar_fugas;
