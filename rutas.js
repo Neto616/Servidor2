@@ -74,8 +74,6 @@ route.get('/crear-datos-prueba', async (req, res) => {
   CLOSE cur;
             END;
         `);
-        await db.query(`//`); // Esto generalmente no se ejecuta como una consulta
-        await db.query(`DELIMITER ;`); // Esto generalmente no se ejecuta como una consulta
 
         await db.query(`CALL generar_fugas();`);
         await db.query(`CALL generar_detalles();`);
