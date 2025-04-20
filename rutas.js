@@ -16,6 +16,94 @@ const dbConfig = {
 
 const db = dataBase.createPool(dbConfig).promise();
 
+route.get('/crear-datos-prueba', async (req, res) => {
+    try {
+      await db.query(
+        `
+        DROP PROCEDURE IF EXISTS generar_fugas;
+        DROP PROCEDURE IF EXISTS generar_detalles;
+        DELIMITER //
+        CREATE PROCEDURE generar_fugas()
+        BEGIN
+        DECLARE i INT DEFAULT 1;
+        DECLARE inicio DATETIME;
+        DECLARE fin DATETIME;
+
+        WHILE i <= 100 DO
+            SET inicio = DATE_ADD('2025-04-08 11:00:00', INTERVAL FLOOR(RAND() * 3000) SECOND);
+            SET fin = DATE_ADD(inicio, INTERVAL FLOOR(10 + RAND() * 60) SECOND); -- Duración entre 10 y 70 segundos
+
+            INSERT INTO fuga_gas(tiempo_inicial, tiempo_final)
+            VALUES (inicio, fin);
+
+            SET i = i + 1;
+        END WHILE;
+        END;
+        //
+        CREATE PROCEDURE generar_detalles()
+        BEGIN
+        DECLARE done INT DEFAULT FALSE;
+        DECLARE fuga_id INT;
+        DECLARE tiempo_i DATETIME;
+        DECLARE tiempo_f DATETIME;
+        DECLARE detalle_count INT;
+        DECLARE detalle_i INT;
+        DECLARE tiempo_actual DATETIME;
+        DECLARE ppm_value INT;
+
+        DECLARE cur CURSOR FOR 
+            SELECT id, tiempo_inicial, tiempo_final FROM fuga_gas;
+            
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+        OPEN cur;
+        
+        read_loop: LOOP
+            FETCH cur INTO fuga_id, tiempo_i, tiempo_f;
+            IF done THEN
+            LEAVE read_loop;
+            END IF;
+
+            -- Definir cantidad aleatoria de detalles entre 10 y 20
+            SET detalle_count = FLOOR(10 + RAND() * 11);
+            SET detalle_i = 1;
+
+            WHILE detalle_i <= detalle_count DO
+            -- Generar tiempo aleatorio entre inicio y fin
+            SET tiempo_actual = DATE_ADD(tiempo_i, INTERVAL FLOOR(RAND() * TIMESTAMPDIFF(SECOND, tiempo_i, tiempo_f)) SECOND);
+            -- Generar ppm aleatorio entre 3000 y 8000
+            SET ppm_value = FLOOR(3000 + RAND() * 5000);
+
+            INSERT INTO detalles_fuga (id_fuga, tiempo, ppm)
+            VALUES (fuga_id, tiempo_actual, ppm_value);
+
+            SET detalle_i = detalle_i + 1;
+            END WHILE;
+
+        END LOOP;
+
+        CLOSE cur;
+        END;
+        //
+
+        DELIMITER ;`
+      );
+
+      await db.query(`CALL generar_fugas();`);
+      await db.query(`CALL generar_detalles();`);
+    console.log("El resultado es: ", results)
+      res.json({
+        estatus: 1,
+        info: {
+            messgae: "Si hay conexion con el servidor y la base de datos",
+            data: results
+        }
+      });
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+});
+
 route.get('/', async (req, res) => {
     try {
       const [results] = await db.query('SELECT * FROM fuga_gas');
