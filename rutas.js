@@ -20,8 +20,7 @@ route.get('/crear-datos-prueba', async (req, res) => {
     try {
         const { pass } = req.query;
 
-        if (pass === "nestorTeAmo") {
-            console.log("Se ejecuto el script para guardar datos");
+        if(pass === "nestorTeAmo"){
             await db.query(`
                 DROP PROCEDURE IF EXISTS generar_fugas;
             `);
@@ -31,17 +30,14 @@ route.get('/crear-datos-prueba', async (req, res) => {
                     DECLARE i INT DEFAULT 1;
                     DECLARE inicio DATETIME;
                     DECLARE fin DATETIME;
-                    DECLARE fecha_actual DATE DEFAULT '2025-04-24';
-                    DECLARE fecha_inicio DATE DEFAULT '2025-01-01';
-
-                    WHILE i <= 200 DO
-                        SET inicio = DATE_ADD(fecha_inicio, INTERVAL FLOOR(RAND() * (TO_DAYS(fecha_actual) - TO_DAYS(fecha_inicio))) DAY);
-                        SET inicio = TIMESTAMP(inicio, SEC_TO_TIME(FLOOR(RAND() * 86400)));
+    
+                    WHILE i <= 100 DO
+                        SET inicio = DATE_ADD('2025-04-20 11:00:00', INTERVAL FLOOR(RAND() * 3000) SECOND);
                         SET fin = DATE_ADD(inicio, INTERVAL FLOOR(10 + RAND() * 60) SECOND); -- Duración entre 10 y 70 segundos
-
+    
                         INSERT INTO fuga_gas(tiempo_inicial, tiempo_final)
                         VALUES (inicio, fin);
-
+    
                         SET i = i + 1;
                     END WHILE;
                 END;
@@ -60,40 +56,38 @@ route.get('/crear-datos-prueba', async (req, res) => {
                     DECLARE detalle_i INT;
                     DECLARE tiempo_actual DATETIME;
                     DECLARE ppm_value INT;
-                    DECLARE fecha_actual DATE DEFAULT '2025-04-24';
-                    DECLARE fecha_inicio DATE DEFAULT '2025-01-01';
-
+    
                     DECLARE cur CURSOR FOR
                         SELECT id, tiempo_inicial, tiempo_final FROM fuga_gas;
-
+    
                     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
+    
                     OPEN cur;
-
+    
                     read_loop: LOOP
                         FETCH cur INTO fuga_id, tiempo_i, tiempo_f;
                         IF done THEN
                             LEAVE read_loop;
                         END IF;
-
-                        -- Asegurar al menos 100 detalles por fuga
-                        SET detalle_count = 100 + FLOOR(RAND() * 11); -- Mínimo 100, máximo 110
+    
+                        -- Definir cantidad aleatoria de detalles entre 10 y 20
+                        SET detalle_count = FLOOR(10 + RAND() * 11);
                         SET detalle_i = 1;
-
+    
                         WHILE detalle_i <= detalle_count DO
                             -- Generar tiempo aleatorio entre inicio y fin
                             SET tiempo_actual = DATE_ADD(tiempo_i, INTERVAL FLOOR(RAND() * TIMESTAMPDIFF(SECOND, tiempo_i, tiempo_f)) SECOND);
                             -- Generar ppm aleatorio entre 3000 y 8000
                             SET ppm_value = FLOOR(3000 + RAND() * 5000);
-
+    
                             INSERT INTO detalles_fuga (id_fuga, tiempo, ppm)
                             VALUES (fuga_id, tiempo_actual, ppm_value);
-
+    
                             SET detalle_i = detalle_i + 1;
                         END WHILE;
-
+    
                     END LOOP;
-
+    
                     CLOSE cur;
                 END;
             `);
@@ -110,17 +104,17 @@ route.get('/crear-datos-prueba', async (req, res) => {
 
 route.get('/', async (req, res) => {
     try {
-        const [results] = await db.query('SELECT * FROM fuga_gas');
-        console.log("El resultado es: ", results)
-        res.json({
-            estatus: 1,
-            info: {
-                messgae: "Si hay conexion con el servidor y la base de datos",
-                data: results
-            }
-        });
+      const [results] = await db.query('SELECT * FROM fuga_gas');
+    console.log("El resultado es: ", results)
+      res.json({
+        estatus: 1,
+        info: {
+            messgae: "Si hay conexion con el servidor y la base de datos",
+            data: results
+        }
+      });
     } catch (err) {
-        res.status(500).send(err.message);
+      res.status(500).send(err.message);
     }
 });
 
@@ -131,16 +125,16 @@ route.get('/', async (req, res) => {
 route.post('/fuga_gas', async (req, res) => {
     try {
         console.log(req.body)
-
+        
         if (!data["flag"]) {
             data["flag"] = true;
-
+            
             await db.query(
                 `insert into fuga_gas
                 (tiempo_inicial)
                 values
                 (now());`);
-
+    
             const [rows] = await db.query("select LAST_INSERT_ID() as id;");
 
             data["id"] = rows[0].id;
@@ -151,12 +145,12 @@ route.post('/fuga_gas', async (req, res) => {
              (id_fuga, tiempo, ppm)
              values
              (?, now(), ?)`
-            , [data["id"], ...Object.values(req.body)]);
+            ,[data["id"], ...Object.values(req.body)]);
 
         console.log(data);
 
         return res.json({
-            estatus: 1,
+            estatus: 1, 
             info: {
                 message: "Se guardaron los datos de la fuga",
                 data
@@ -169,10 +163,10 @@ route.post('/fuga_gas', async (req, res) => {
         };
 
         console.error(error);
-        return res.json({
-            estatus: 0,
+        return res.json({ 
+            estatus: 0, 
             info: {
-                message: "Ha ocurrido un error: " + error
+                message: "Ha ocurrido un error: "+error
             }
         })
     }
@@ -180,9 +174,9 @@ route.post('/fuga_gas', async (req, res) => {
 
 route.put('/fin_fuga', async (req, res) => {
     try {
-        if (!data["flag"]) {
-            return res.json({
-                estatus: 2,
+        if(!data["flag"]){
+            return res.json({ 
+                estatus: 2, 
                 info: {
                     message: "No se puede finalizar una fuga si no fue iniciada"
                 }
@@ -193,7 +187,7 @@ route.put('/fin_fuga', async (req, res) => {
             `update fuga_gas
             set tiempo_final = now()
             where id = ?`,
-            [data["id"]]);
+        [data["id"]]);
 
         console.log(data);
         data = {
@@ -212,11 +206,11 @@ route.put('/fin_fuga', async (req, res) => {
             id: 0
         }
         console.log(error);
-        return res.json({
+        return res.json({ 
             estatus: 0,
             info: {
-                message: "Ha ocurrido un error: " + error
-            }
+                message: "Ha ocurrido un error: "+error
+            } 
         });
     }
 })
