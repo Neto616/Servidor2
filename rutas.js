@@ -21,6 +21,7 @@ route.get('/crear-datos-prueba', async (req, res) => {
         const { pass } = req.query;
 
         if (pass === "nestorTeAmo") {
+            console.log("Se ejecuto el script para guardar datos");
             await db.query(`
                 DROP PROCEDURE IF EXISTS generar_fugas;
             `);
