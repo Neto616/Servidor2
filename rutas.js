@@ -93,9 +93,11 @@ route.get('/crear-datos-prueba', async (req, res) => {
             `);
             await db.query(`CALL generar_fugas();`);
             await db.query(`CALL generar_detalles();`);
+            return res.status(200).json({ estatus: 1, info: "Se generaron los datos porque tienes la contraseña" });
+
         }
 
-        return res.status(200).json({ estatus: 1, info: "Datos de prueba generados exitosamente" });
+        return res.status(200).json({ estatus: 1, info: "No tienes la contraseña no puedes generar datos de prueba" });
 
     } catch (err) {
         res.status(500).send(err.message);
