@@ -26,24 +26,24 @@ route.get('/crear-datos-prueba', async (req, res) => {
             `);
             await db.query(`
                 CREATE PROCEDURE generar_fugas()
-BEGIN
-    DECLARE i INT DEFAULT 1;
-    DECLARE inicio DATETIME;
-    DECLARE fin DATETIME;
-    DECLARE fecha_actual DATE DEFAULT '2025-04-24';
-    DECLARE fecha_inicio DATE DEFAULT '2025-01-01';
+                BEGIN
+                    DECLARE i INT DEFAULT 1;
+                    DECLARE inicio DATETIME;
+                    DECLARE fin DATETIME;
+                    DECLARE fecha_actual DATE DEFAULT '2025-04-24';
+                    DECLARE fecha_inicio DATE DEFAULT '2025-01-01';
 
-    WHILE i <= 100 DO
-        SET inicio = DATE_ADD(fecha_inicio, INTERVAL FLOOR(RAND() * (TO_DAYS(fecha_actual) - TO_DAYS(fecha_inicio))) DAY);
-        SET inicio = TIMESTAMP(inicio, SEC_TO_TIME(FLOOR(RAND() * 86400)));
-        SET fin = DATE_ADD(inicio, INTERVAL FLOOR(10 + RAND() * 60) SECOND); -- Duración entre 10 y 70 segundos
+                    WHILE i <= 200 DO
+                        SET inicio = DATE_ADD(fecha_inicio, INTERVAL FLOOR(RAND() * (TO_DAYS(fecha_actual) - TO_DAYS(fecha_inicio))) DAY);
+                        SET inicio = TIMESTAMP(inicio, SEC_TO_TIME(FLOOR(RAND() * 86400)));
+                        SET fin = DATE_ADD(inicio, INTERVAL FLOOR(10 + RAND() * 60) SECOND); -- Duración entre 10 y 70 segundos
 
-        INSERT INTO fuga_gas(tiempo_inicial, tiempo_final)
-        VALUES (inicio, fin);
+                        INSERT INTO fuga_gas(tiempo_inicial, tiempo_final)
+                        VALUES (inicio, fin);
 
-        SET i = i + 1;
-    END WHILE;
-END;
+                        SET i = i + 1;
+                    END WHILE;
+                END;
             `);
             await db.query(`
                 DROP PROCEDURE IF EXISTS generar_detalles;
