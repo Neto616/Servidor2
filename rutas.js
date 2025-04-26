@@ -50,6 +50,37 @@ route.get('/', async (req, res) => {
     }
 });
 
+route.get('/estatus_sensor', async (req, res) => {
+    try {
+        if(data.flag){
+            var [results] = await db.query('SELECT * FROM detalles_fuga where id_fuga = ?', [data.id]);
+        }
+
+      res.json({
+        estatus: 1,
+        info: {
+            messgae: "Datos del sensor",
+            data: {
+                isActive: data.flag,
+                ppm: data.flag ? 0 : 0
+            }
+        }
+      });
+    } catch (err) {
+      res.status(500).json({
+        estatus: 0,
+        info: {
+            messgae: "Ha ocurrido un error",
+            data: {
+                isActive: false,
+                ppm: 0
+            }
+        }
+      });
+    }
+});
+
+
 /**
  * En esta ruta debe entrar unicamente las particulas por millon en el cuerpo d la solicitud
  */
