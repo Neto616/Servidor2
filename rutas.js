@@ -94,8 +94,8 @@ route.post('/register_device', async (req, res) => {
         const token = req.body.DEVICEID || req.body.token;
   
         console.log("Token recibido:", token);
-        if (token && !deviceTokens.includes(token)) {
-          deviceTokens.push(token);
+        if (token && !devices.includes(token)) {
+            devices.push(token);
           console.log(`Token registrado: ${token}`);
           await db.query(`insert into devices
                     (token, estatus)
