@@ -36,4 +36,4 @@ async function notification (devices, title, body, extra_information) {
       }
 }
 
-export default notification;
+module.exports = notification;
