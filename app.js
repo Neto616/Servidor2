@@ -6,6 +6,7 @@ const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(require(path.join(__dirname, "./rutas.js")))
 

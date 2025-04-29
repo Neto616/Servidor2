@@ -44,12 +44,13 @@ route.get('/', async (req, res) => {
       res.json({
         estatus: 1,
         info: {
-            messgae: "Si hay conexion con el servidor y la base de datos",
-            data: results
+            message: "Si hay conexion con el servidor y la base de datos",
+            // data: results
         }
       });
     } catch (err) {
-      res.status(500).send(err.message);
+        console.log(err);
+        res.status(500).send(err.message);
     }
 });
 
@@ -89,19 +90,24 @@ route.get('/estatus_sensor', async (req, res) => {
  */
 
 route.post('/register_device', async (req, res) => {
-    const token = req.body.DEVICEID || req.body.token;
+    try {
+        const token = req.body.DEVICEID || req.body.token;
   
-    console.log("Token recibido:", token);
-    if (token && !deviceTokens.includes(token)) {
-      deviceTokens.push(token);
-      console.log(`Token registrado: ${token}`);
-      await db.query(`insert into devices
-                (token, estatus)
-                values
-                (?, 1);`, [token]);
-      return res.json({ code: "OK", message: "Token registrado", id: 1 });
-    } else {
-      return res.json({ code: "ERROR", message: "Token inválido o ya registrado", id: 0 });
+        console.log("Token recibido:", token);
+        if (token && !deviceTokens.includes(token)) {
+          deviceTokens.push(token);
+          console.log(`Token registrado: ${token}`);
+          await db.query(`insert into devices
+                    (token, estatus)
+                    values
+                    (?, 1);`, [token]);
+          return res.json({ code: "OK", message: "Token registrado", id: 1 });
+        } else {
+          return res.json({ code: "ERROR", message: "Token inválido o ya registrado", id: 0 });
+        }
+    } catch (error) {
+        console.log("Ha ocurrido un error: ", error);
+        return res.json({ estatus: 0, info: { message: "Ha ocurrido un error en el servidor"}})
     }
   });
   
