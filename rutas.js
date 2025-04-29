@@ -1,6 +1,9 @@
 const express = require("express");
 const dataBase = require("mysql2");
+const { default: notification } = require("./notificacion");
 const route = express.Router();
+
+const devices = []
 
 let data = {
     flag: false,
@@ -85,13 +88,31 @@ route.get('/estatus_sensor', async (req, res) => {
  * En esta ruta debe entrar unicamente las particulas por millon en el cuerpo d la solicitud
  */
 
+route.post('/register_device', async (req, res) => {
+    const token = req.body.DEVICEID || req.body.token;
+  
+    console.log("Token recibido:", token);
+    if (token && !deviceTokens.includes(token)) {
+      deviceTokens.push(token);
+      console.log(`Token registrado: ${token}`);
+      await db.query(`insert into devices
+                (token, estatus)
+                values
+                (?, 1);`, [token]);
+      return res.json({ code: "OK", message: "Token registrado", id: 1 });
+    } else {
+      return res.json({ code: "ERROR", message: "Token inválido o ya registrado", id: 0 });
+    }
+  });
+  
+
 route.post('/fuga_gas', async (req, res) => {
     try {
         console.log("fuga_dgas", req.body)
         
         if (!data["flag"]) {
             data["flag"] = true;
-            
+            await notification(devices, "¡Se detecto una Fuga!", "Se ha detectado una fuga en tu sistma.", "Fuga");
             await db.query(
                 `insert into fuga_gas
                 (tiempo_inicial)
@@ -145,7 +166,7 @@ route.put('/fin_fuga', async (req, res) => {
                 }
             })
         }
-
+        await notification(devices, "Ha finalizado una fuga", "Se ha finalizo una fuga en tu sistma.", "Fin fuga");
         await db.query(
             `update fuga_gas
             set tiempo_final = now()
