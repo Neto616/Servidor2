@@ -43,7 +43,7 @@ async function notification(devices, title, body, extra_information) {
             await admin.messaging().send(message);
         });
 
-        return response;
+        return ;
     } catch (error) {
         console.error("❌ Error al enviar la notificación:", error);
         throw error;
