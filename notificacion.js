@@ -26,7 +26,7 @@ function initFirebase() {
 async function notification(devices, title, body, extra_information) {
     initFirebase(); // inicializa solo una vez
 
-    const message = {
+    let message = {
         notification: {
             title,
             body
@@ -34,12 +34,15 @@ async function notification(devices, title, body, extra_information) {
         data: {
             extra_information: extra_information
         },
-        token: devices
+        token: ""
     };
 
     try {
-        const response = await admin.messaging().sendMulticast(message);
-        console.log("✅ Notificación enviada:", response);
+        devices.forEach(async (element) => {
+            message["token"] = element
+            await admin.messaging().send(message);
+        });
+
         return response;
     } catch (error) {
         console.error("❌ Error al enviar la notificación:", error);
