@@ -1,6 +1,6 @@
 const express = require("express");
 const dataBase = require("mysql2");
-const { default: notification } = require("./notificacion");
+const notification = require("./notificacion");
 const route = express.Router();
 
 const devices = []
