@@ -3,7 +3,7 @@ const dataBase = require("mysql2");
 const notification = require("./notificacion");
 const route = express.Router();
 
-const devices = ""
+let devices = ""
 
 let data = {
     flag: false,
