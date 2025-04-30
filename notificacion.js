@@ -25,7 +25,7 @@ function initFirebase() {
 
 async function notification(devices, title, body, extra_information) {
     initFirebase();
-
+    console.log(devices)
     const messages = {
         notification: { title, body },
         data: { extra_information },

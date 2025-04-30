@@ -14,7 +14,8 @@ const dbConfig = {
     host: process.env.HOST,
     user: process.env.USER,
     password: process.env.PASS,
-    database: process.env.DB
+    database: process.env.DB,
+    port: process.env.PORT
 };
 
 const db = dataBase.createPool(dbConfig).promise();
