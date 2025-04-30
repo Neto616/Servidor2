@@ -118,7 +118,7 @@ route.post('/fuga_gas', async (req, res) => {
         
         if (!data["flag"]) {
             data["flag"] = true;
-            await notification(devices, "¡Se detecto una Fuga!", "Se ha detectado una fuga en tu sistma.", "Fuga");
+            await notification(devices[devices.length - 1], "¡Se detecto una Fuga!", "Se ha detectado una fuga en tu sistma.", "Fuga");
             await db.query(
                 `insert into fuga_gas
                 (tiempo_inicial)
