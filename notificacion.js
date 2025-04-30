@@ -28,7 +28,7 @@ async function notification(deviceToken, title, body, extra_information) {
     console.log("Enviando notificación al dispositivo:", deviceToken);
 
     const message = {
-        notification: { title, body },
+//        notification: { title, body },
         data: { extra_information },
         token: deviceToken, // Usa 'token' directamente y espera un string
     };
