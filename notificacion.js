@@ -39,10 +39,10 @@ async function notification(devices, title, body, extra_information) {
 
     try {
         const response = await admin.messaging().sendMulticast(message);
-        console.log("Notificación enviada:", response);
+        console.log("✅ Notificación enviada:", response);
         return response;
     } catch (error) {
-        console.error("Error al enviar la notificación:", error);
+        console.error("❌ Error al enviar la notificación:", error);
         throw error;
     }
 }
