@@ -23,18 +23,20 @@ function initFirebase() {
     }
 }
 
-async function notification(devices, title, body, extra_information) {
+async function notification(deviceToken, title, body, extra_information) {
     initFirebase();
-    console.log(devices)
-    const messages = {
+    console.log("Enviando notificación al dispositivo:", deviceToken);
+
+    const message = {
         notification: { title, body },
         data: { extra_information },
-        token: devices
+        token: deviceToken, // Usa 'token' directamente y espera un string
     };
 
     try {
-        const responses = await admin.messaging().send(messages);
-        return responses; // Devuelve un array de respuestas
+        const response = await admin.messaging().send(message);
+        console.log("Notificación enviada exitosamente:", response);
+        return response;
     } catch (error) {
         console.error("❌ Error al enviar la notificación:", error);
         throw error;

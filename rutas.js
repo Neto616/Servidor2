@@ -3,7 +3,7 @@ const dataBase = require("mysql2");
 const notification = require("./notificacion");
 const route = express.Router();
 
-const devices = []
+const devices = ""
 
 let data = {
     flag: false,
@@ -96,7 +96,7 @@ route.post('/register_device', async (req, res) => {
   
         console.log("Token recibido:", token);
         if (token && !devices.includes(token)) {
-            devices.push(token);
+            devices = token;
           console.log(`Token registrado: ${token}`);
           await db.query(`insert into devices
                     (token, estatus)
@@ -119,7 +119,7 @@ route.post('/fuga_gas', async (req, res) => {
         
         if (!data["flag"]) {
             data["flag"] = true;
-            await notification(devices[devices.length - 1], "¡Se detecto una Fuga!", "Se ha detectado una fuga en tu sistma.", "Fuga");
+            await notification(devices, "¡Se detecto una Fuga!", "Se ha detectado una fuga en tu sistma.", "Fuga");
             await db.query(
                 `insert into fuga_gas
                 (tiempo_inicial)
