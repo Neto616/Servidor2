@@ -34,11 +34,11 @@ async function notification(devices, title, body, extra_information) {
         data: {
             extra_information: extra_information
         },
-        token: devices[0] // ¡Ojo! Esto debe ser un solo token si no usas multicast
+        token: devices
     };
 
     try {
-        const response = await admin.messaging().send(message);
+        const response = await admin.messaging().sendMulticast(message);
         console.log("Notificación enviada:", response);
         return response;
     } catch (error) {
