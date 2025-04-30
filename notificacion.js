@@ -29,7 +29,11 @@ async function notification(deviceToken, title, body, extra_information) {
 
     const message = {
 //        notification: { title, body },
-        data: { extra_information },
+        data: { 
+            title, 
+            body, 
+            extra_information 
+        },
         token: deviceToken, // Usa 'token' directamente y espera un string
     };
 
