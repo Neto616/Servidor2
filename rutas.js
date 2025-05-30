@@ -91,9 +91,32 @@ route.get('/estatus_sensor', async (req, res) => {
 
 
 /**
- * En esta ruta debe entrar unicamente las particulas por millon en el cuerpo d la solicitud
+ * En esta ruta debe entrar unicamente las particulas por millon en el cuerpo de la solicitud
  */
+route.post('/configuracion', async (req, res) => {
+    try {
+        const { ppmLimiteInicial, ppmLimiteFinal, nombreGas } = req.body;
+        if(!ppmLimiteFinal || !ppmLimiteInicial || !nombreGas) return res.json({ estatus: 0, info: { message: "No se permiten datos vacios" }})
+        await db.query(`
+            update configuraciones
+            set ppm_limite_inicial = ?,
+            ppm_limite_final = ?,
+            gas = ?,
+            estatus = 1    
+        `, [ppmLimiteInicial, ppmLimiteFinal, nombreGas]);
 
+        return res.json({ estatus: 1, info: {
+            message: "Se ha actualizado la configuración del detector de gas"
+        }})
+    } catch (error) {
+        console.log("[Configuracion POST] ", error);
+        return res.json({ estatus: 0, info: {
+            message: "Ha ocurrido un error"
+        }})
+    }
+})
+
+// Ruta para almacenar los dispositivos que recibiran las notificaciones al haber una fuga de gas
 route.post('/register_device', async (req, res) => {
     try {
         const token = req.body.DEVICEID || req.body.token;
@@ -114,9 +137,9 @@ route.post('/register_device', async (req, res) => {
         console.log("Ha ocurrido un error: ", error);
         return res.json({ estatus: 0, info: { message: "Ha ocurrido un error en el servidor"}})
     }
-  });
-  
+});
 
+// Guarda las fugas que se detechtan 
 route.post('/fuga_gas', async (req, res) => {
     try {
         console.log("fuga_dgas", req.body)
@@ -167,6 +190,7 @@ route.post('/fuga_gas', async (req, res) => {
     }
 })
 
+// Finaliza la fuga que se detecto por ultima vez
 route.put('/fin_fuga', async (req, res) => {
     try {
         if(!data["flag"]){
