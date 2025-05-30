@@ -10,15 +10,19 @@ let data = {
     id: 0
 };
 
-const dbConfig = {
-    host: process.env.HOST,
-    user: process.env.USER,
-    password: process.env.PASS,
-    database: process.env.DB,
-    port: process.env.PORT
-};
+const { parse } = require("url");
 
-const db = dataBase.createPool(dbConfig).promise();
+const dbUrl = process.env.DATABASE_URL;
+const parsed = new URL(dbUrl);
+
+const db = mysql.createPool({
+  host: parsed.hostname,
+  user: parsed.username,
+  password: parsed.password,
+  database: parsed.pathname.replace("/", ""),
+  port: parsed.port,
+  ssl: { rejectUnauthorized: false }
+}).promise();
 
 route.get('/crear-datos-prueba', async (req, res) => {
     try {
