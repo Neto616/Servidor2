@@ -10,8 +10,6 @@ let data = {
     id: 0
 };
 
-const { parse } = require("url");
-
 const dbUrl = process.env.DB_URL;
 const parsed = new URL(dbUrl);
 
@@ -23,6 +21,27 @@ const db = mysql.createPool({
   port: parsed.port,
   ssl: { rejectUnauthorized: false }
 }).promise();
+
+// Middleware
+async function umbralMdw(req, res, next){
+    try {
+        const [resultado] = await db.execute("Select ppm_limite_inicial, ppm_limite_final, gas from configuraciones");
+
+        if(!req.body?.valor) return res.json({ estatus: 0, info: {message: "No trae valor ha guardar"}});
+
+        if(req.body.valor > resultado[0].ppm_limite_inicial) return res.json({ estatus: -1, info: {message: "No entra en el umbra minimo"}});
+
+        console.log(resultado);
+
+        return next();
+    } catch (error) {
+        console.log("[Umbral MDW] Ha ocurrido un error: ", error);
+        return res.json({ estatus: 0, info: {
+            message: "Ha sucedido un error"
+        }});
+    }
+}
+
 
 route.get('/crear-datos-prueba', async (req, res) => {
     try {
@@ -68,7 +87,7 @@ route.get('/estatus_sensor', async (req, res) => {
       res.json({
         estatus: 1,
         info: {
-            messgae: "Datos del sensor",
+            message: "Datos del sensor",
             data: {
                 isActive: data.flag,
                 ppm: data.flag ? 0 : 0
@@ -79,7 +98,7 @@ route.get('/estatus_sensor', async (req, res) => {
       res.status(500).json({
         estatus: 0,
         info: {
-            messgae: "Ha ocurrido un error",
+            message: "Ha ocurrido un error",
             data: {
                 isActive: false,
                 ppm: 0
@@ -140,8 +159,12 @@ route.post('/register_device', async (req, res) => {
 });
 
 // Guarda las fugas que se detechtan 
-route.post('/fuga_gas', async (req, res) => {
+route.post('/fuga_gas', [umbralMdw],async (req, res) => {
     try {
+        if(!req.body) return res.json({ estatus: 0, 
+            info: {
+                message: "No se permiten datos vacios"
+            }});
         console.log("fuga_dgas", req.body)
         
         if (!data["flag"]) {
