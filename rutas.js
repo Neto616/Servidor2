@@ -36,7 +36,7 @@ async function umbralMdw(req, res, next){
 
         const estado = valor > ppm_limite_final;
         await db.execute(`UPDATE configuraciones set fueraUmbra = ${estado ? 1 : 0}`);
-        
+
         if(valor < ppm_limite_inicial) return res.json({ estatus: 0, info: {message: "Muy por debajo del umbral"}});
         return next();
 
@@ -232,6 +232,7 @@ route.put('/fin_fuga', async (req, res) => {
             })
         }
         if(devices.length) await notification(devices, "Ha finalizado una fuga", "Se ha finalizo una fuga en tu sistma.", "Fin fuga");
+        await db.execute(`UPDATE configuraciones set fueraUmbra = 0`);
         await db.query(
             `update fuga_gas
             set tiempo_final = now()
