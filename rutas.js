@@ -2,9 +2,9 @@ const express = require("express");
 const mysql = require("mysql2");
 const notification = require("./notificacion");
 const route = express.Router();
+const link = "https://nestor1606-servidor1-22-yw7apkgs6c18.deno.dev"
 
-let devices = ""
-
+let devices = "";
 let data = {
     flag: false,
     id: 0
@@ -29,9 +29,17 @@ async function umbralMdw(req, res, next){
 
         const [resultado] = await db.execute("select ppm_limite_inicial, ppm_limite_final, gas from configuraciones");
         console.log("El resultado de la consulta es: ", resultado);
-        if(req.body.valor < resultado[0].ppm_limite_inicial) 
+        if(req.body.valor < resultado[0].ppm_limite_inicial) {
+            await fetch(`${link}/umbral`,
+                {method: "PUT", body: JSON.stringify({ umbral: false })}
+            )
             return res.json({ estatus: -1, info: {message: "No entra en el umbra minimo"}});
-
+        }
+        else {
+            await fetch(`${link}/umbral`,
+                {method: "PUT", body: JSON.stringify({ umbral: true })}
+            )
+        }
 
         return next();
     } catch (error) {
@@ -225,7 +233,7 @@ route.put('/fin_fuga', async (req, res) => {
                 }
             })
         }
-        await notification(devices, "Ha finalizado una fuga", "Se ha finalizo una fuga en tu sistma.", "Fin fuga");
+        if(devices.length) await notification(devices, "Ha finalizado una fuga", "Se ha finalizo una fuga en tu sistma.", "Fin fuga");
         await db.query(
             `update fuga_gas
             set tiempo_final = now()
