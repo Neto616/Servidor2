@@ -25,35 +25,33 @@ const db = mysql.createPool({
 // Middleware
 async function umbralMdw(req, res, next){
     try {
-        if (Object.keys(req.body).length === 0) return res.json({ estatus: 0, info: {message: "No trae valor ha guardar"}});
-
-        const [resultado] = await db.execute("select ppm_limite_inicial, ppm_limite_final, gas from configuraciones");
-        console.log("El resultado de la consulta es: ", resultado);
-        if (req.body.valor > resultado[0].ppm_limite_final) {
-            const peticion = await fetch(`${link}/umbral`,
-                {method: "PUT", body: JSON.stringify({ umbral: true })}
-            )
-
-            console.log("Fetch resultado: ", await peticion.json())
-        }
-        else {
-            const peticion = await fetch(`${link}/umbral`,
-                {method: "PUT", body: JSON.stringify({ umbral: false })}
-            );
-
-            console.log("Fetch resultado: ", await peticion.json())
-            return res.json({ estatus: -1, info: {message: "No entra en el umbra minimo"}});
+        if (!req.body || typeof req.body.valor !== "number") {
+            return res.json({ estatus: 0, info: { message: "No trae valor a guardar" } });
         }
 
+        const [resultado] = await db.execute("SELECT ppm_limite_inicial, ppm_limite_final FROM configuraciones");
+        const { ppm_limite_final } = resultado[0];
+        const valor = req.body.valor;
+
+        const estado = valor > ppm_limite_final;
+
+        const peticion = await fetch(`${link}/umbral`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ umbral: estado })
+        });
+
+        console.log("Umbral actualizado:", await peticion.json());
         return next();
+
     } catch (error) {
-        console.log("[Umbral MDW] Ha ocurrido un error: ", error);
-        return res.json({ estatus: 0, info: {
-            message: "Ha sucedido un error"
-        }});
+        console.log("[Umbral MDW] Ha ocurrido un error:", error);
+        return res.json({
+            estatus: 0,
+            info: { message: "Ha sucedido un error" }
+        });
     }
 }
-
 
 route.get('/crear-datos-prueba', async (req, res) => {
     try {
