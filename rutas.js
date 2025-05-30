@@ -27,10 +27,11 @@ async function umbralMdw(req, res, next){
     try {
         if(!Object.keys(req.body)) return res.json({ estatus: 0, info: {message: "No trae valor ha guardar"}});
 
-        const [resultado] = await db.execute("Select ppm_limite_inicial, ppm_limite_final, gas from configuraciones");
-        if(req.body.valor > resultado[0].ppm_limite_inicial) return res.json({ estatus: -1, info: {message: "No entra en el umbra minimo"}});
-
+        const [resultado] = await db.execute("select ppm_limite_inicial, ppm_limite_final, gas from configuraciones");
         console.log(resultado);
+        if(req.body.valor < resultado[0].ppm_limite_inicial) 
+            return res.json({ estatus: -1, info: {message: "No entra en el umbra minimo"}});
+
 
         return next();
     } catch (error) {
