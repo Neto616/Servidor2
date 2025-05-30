@@ -2,7 +2,6 @@ const express = require("express");
 const mysql = require("mysql2");
 const notification = require("./notificacion");
 const route = express.Router();
-const link = "https://nestor1606-servidor1-22-jp1zy010bteq.deno.dev"
 
 let devices = "";
 let data = {
@@ -22,6 +21,7 @@ const db = mysql.createPool({
   ssl: { rejectUnauthorized: false }
 }).promise();
 
+let fueraUmbral = false
 // Middleware
 async function umbralMdw(req, res, next){
     try {
@@ -30,18 +30,14 @@ async function umbralMdw(req, res, next){
         }
 
         const [resultado] = await db.execute("SELECT ppm_limite_inicial, ppm_limite_final FROM configuraciones");
-        const { ppm_limite_final } = resultado[0];
+        const { ppm_limite_inicial, ppm_limite_final } = resultado[0];
+        console.log(ppm_limite_final)
         const valor = req.body.valor;
 
         const estado = valor > ppm_limite_final;
-
-        const peticion = await fetch(`${link}/umbral`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ umbral: estado })
-        });
-
-        console.log("Umbral actualizado:", await peticion.json());
+        await db.execute(`UPDATE configuraciones set fueraUmbra = ${estado ? 1 : 0}`);
+        
+        if(valor < ppm_limite_inicial) return res.json({ estatus: 0, info: {message: "Muy por debajo del umbral"}});
         return next();
 
     } catch (error) {
