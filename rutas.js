@@ -34,14 +34,14 @@ async function umbralMdw(req, res, next){
                 {method: "PUT", body: JSON.stringify({ umbral: true })}
             )
 
-            console.log(peticion)
+            console.log("Fetch resultado: ", await peticion.json())
         }
         else {
             const peticion = await fetch(`${link}/umbral`,
                 {method: "PUT", body: JSON.stringify({ umbral: false })}
             );
 
-            console.log(peticion)
+            console.log("Fetch resultado: ", await peticion.json())
             return res.json({ estatus: -1, info: {message: "No entra en el umbra minimo"}});
         }
 
