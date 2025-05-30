@@ -1,5 +1,5 @@
 const express = require("express");
-const dataBase = require("mysql2");
+const mysql = require("mysql2");
 const notification = require("./notificacion");
 const route = express.Router();
 
@@ -12,7 +12,7 @@ let data = {
 
 const { parse } = require("url");
 
-const dbUrl = process.env.DATABASE_URL;
+const dbUrl = process.env.DB_URL;
 const parsed = new URL(dbUrl);
 
 const db = mysql.createPool({
