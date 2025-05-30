@@ -2,7 +2,7 @@ const express = require("express");
 const mysql = require("mysql2");
 const notification = require("./notificacion");
 const route = express.Router();
-const link = "https://nestor1606-servidor1-22-qantkayk21c6.deno.dev"
+const link = "https://nestor1606-servidor1-22-jp1zy010bteq.deno.dev"
 
 let devices = "";
 let data = {
