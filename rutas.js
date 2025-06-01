@@ -179,9 +179,9 @@ route.post('/fuga_gas', [umbralMdw],async (req, res) => {
 
             await db.query(
                 `insert into fuga_gas
-                (tiempo_inicial)
+                (tiempo_inicial, tipo_gas)
                 values
-                (now());`);
+                (now(), (select gas from configuraciones LIMIT 1));`);
     
             const [rows] = await db.query("select LAST_INSERT_ID() as id;");
 
